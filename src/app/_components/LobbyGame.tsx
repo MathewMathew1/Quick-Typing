@@ -36,7 +36,7 @@ export const LobbyGame: React.FC = () => {
   }, [timer]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
+    <div className="min-h-[500px] bg-gray-900 text-white flex flex-col items-center justify-center p-4">
       <div className="bg-gray-800 rounded-2xl shadow-lg p-6 w-full max-w-xl flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-center">
           {gameState === "preGame" && "Pre-Game"}
