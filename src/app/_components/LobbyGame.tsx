@@ -8,8 +8,13 @@ export const LobbyGame: React.FC = () => {
   const [quote, setQuote] = useState<string>("");
   const [timer, setTimer] = useState<number>(0);
   const [gameState, setGameState] = useState<GameState>("idle");
-  const { inputValue, handleInputChange, isCurrentWordCorrect } =
-    useTypingRace(quote);
+  const {
+    inputValue,
+    handleInputChange,
+    currentWordIndex,
+    isCurrentWordCorrect,
+    words,
+  } = useTypingRace(quote);
 
   api.lobby.onPreGame.useSubscription(undefined, {
     onData: (payload) => {
@@ -46,9 +51,24 @@ export const LobbyGame: React.FC = () => {
           {gameState === "game" && "Game"}
           {gameState === "idle" && "Waiting..."}
         </h1>
-
-        <div className="rounded-lg bg-gray-700 p-4 text-center text-lg">
-          {quote || "Waiting for quote..."}
+        <div className="rounded-lg bg-gray-700 p-4 text-center text-lg break-words whitespace-normal">
+          {words.length === 0 ? (
+            <span>Waiting for quote...</span>
+          ) : (
+            words.map((word, index) => {
+              let colorClass = "text-white";
+              if (index < currentWordIndex) colorClass = "text-green-400";
+              else if (index === currentWordIndex)
+                colorClass = isCurrentWordCorrect
+                  ? "text-white underline"
+                  : "text-red-400 underline";
+              return (
+                <span key={index} className={`${colorClass} mr-1`}>
+                  {word}
+                </span>
+              );
+            })
+          )}
         </div>
 
         <div className="text-center font-mono text-3xl">{timer}s</div>
