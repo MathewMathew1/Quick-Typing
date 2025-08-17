@@ -1,12 +1,14 @@
-// wssServer.ts
-import { applyWSSHandler } from '@trpc/server/adapters/ws';
-import { appRouter } from './root';
-import { WebSocketServer } from "ws";
-import { createContext } from './context';
-
+import { applyWSSHandler } from "@trpc/server/adapters/ws";
+import { appRouter } from "./root";
+import { WebSocketServer, type WebSocket } from "ws";
+import { createContext, type Context } from "./context";
+import { lobbyManager } from "./routers/lobby/LobbyManager";
+import type { IncomingMessage } from "http";
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 const wss = new WebSocketServer({ port: PORT });
+
+const wsUserMap = new Map<WebSocket, string>();
 
 const handler = applyWSSHandler({
   wss,
@@ -15,15 +17,22 @@ const handler = applyWSSHandler({
   keepAlive: { enabled: true, pingMs: 30000, pongWaitMs: 5000 },
 });
 
-wss.on('connection', (ws) => {
-  console.log(`➕ Connection (${wss.clients.size})`);
-  ws.once('close', () => {
-    console.log(`➖ Connection (${wss.clients.size})`);
+wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
+  const ctx: Context = await createContext({
+    req,
+    res: {} as any,
+    info: {} as any, 
+  });
+  const userId = ctx.session?.user?.id ?? `guest_${req.socket.remoteAddress}`;
+  wsUserMap.set(ws, userId);
+
+  ws.once("close", () => {
+    lobbyManager.leave(userId);
+    wsUserMap.delete(ws);
   });
 });
 
-console.log(`✅ WebSocket Server listening on ws://localhost:${PORT}`);
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   handler.broadcastReconnectNotification();
   wss.close();
 });

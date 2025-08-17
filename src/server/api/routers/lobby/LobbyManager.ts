@@ -24,3 +24,5 @@ export class LobbyManager {
     return Array.from(this.users.values());
   }
 }
+
+export const lobbyManager = new LobbyManager();

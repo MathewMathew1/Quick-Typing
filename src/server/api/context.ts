@@ -37,7 +37,7 @@ export const createContext = async (opts: CreateWSSContextFnOptions) => {
   if (!session) {
     session = {
       user: {
-        id: `guest_${Math.random().toString(36).substring(2, 10)}`,
+        id: `guest_${opts.req.socket.remoteAddress}`,
         name: null,
         email: null,
         image: null,

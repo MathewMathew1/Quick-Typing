@@ -5,11 +5,9 @@ import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { LobbyEvents } from "./LobbyEvents";
 import type { LobbyUser } from "~/types/lobby";
-import { LobbyManager } from "./LobbyManager";
+import { lobbyManager } from "./LobbyManager"; 
 
 export const lobbyEmitter = new EventEmitter();
-const lobbyManager = new LobbyManager();
-
 
 export const lobbyRouter = createTRPCRouter({
   onJoin: publicProcedure.subscription(() => {
