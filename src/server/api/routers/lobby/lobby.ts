@@ -73,6 +73,7 @@ export const lobbyRouter = createTRPCRouter({
         },
       });
 
+
       if (dbUser) {
         wordsWritten = dbUser.wordsWritten;
         wordsAccurate = dbUser.accurateWords;

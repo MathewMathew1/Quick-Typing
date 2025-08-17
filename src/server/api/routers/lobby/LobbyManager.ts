@@ -32,7 +32,9 @@ export class LobbyManager {
   }
 
   leave(userId: string): void {
+    
     const entry = this.users.get(userId);
+  
     if (entry) {
       this.updateUserData(entry);
     }
@@ -85,9 +87,9 @@ export class LobbyManager {
     entry.roundData.currentWord = word;
   }
 
-  resetRoundData() {
+  async resetRoundData() {
     for (const entry of this.users.values()) {
-      this.updateUserData(entry);
+      await this.updateUserData(entry);
       entry.roundData = {
         wordsWritten: 0,
         wordsAccurate: 0,
@@ -102,7 +104,9 @@ export class LobbyManager {
     entry.user.wordsAccurate += entry.roundData.wordsAccurate;
     entry.user.wordsWritten += entry.roundData.wordsWritten;
 
-    await db.user.update({
+
+    if(!entry.user.isGuest){
+       await db.user.update({
       where: { id: entry.user.id },
       data: {
         secondsWritten: entry.user.timeWritten,
@@ -110,6 +114,8 @@ export class LobbyManager {
         wordsWritten: entry.user.wordsWritten,
       },
     });
+    }
+   
   }
 }
 
