@@ -16,7 +16,7 @@ export default function LobbyTable() {
   }
 
   return (
-    <div className="overflow-x-auto p-4">
+    <div className="overflow-x-auto p-4 w-full sm:w-[80%]">
       <table className="min-w-full text-left border border-gray-700">
         <thead className="bg-gray-900 text-white">
           <tr>

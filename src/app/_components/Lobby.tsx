@@ -4,12 +4,12 @@ import { useLobby } from "../context/LobbyContext";
 import LobbyTable from "./LobbyTable";
 
 const Lobby = () => {
-  const { users, loadedData, isError } = useLobby();
+  const {  isError } = useLobby();
 
   if (isError) {
     return <div className="p-4 text-red-500">Failed to load lobby data.</div>;
   }
-  return <div>
+  return <div className="w-full flex justify-center">
     <LobbyTable/>
   </div>;
 };
