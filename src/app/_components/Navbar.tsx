@@ -54,9 +54,7 @@ export default function Navbar() {
           <div className="absolute right-4 top-16 w-40 bg-gray-800 rounded shadow-lg flex flex-col md:hidden">
             {session ? (
               <>
-                <Link href="/profile" className="px-4 py-2 hover:bg-gray-700">
-                  My Profile
-                </Link>
+
                 <button
                   onClick={() => signOut()}
                   className="px-4 py-2 text-left hover:bg-gray-700"
