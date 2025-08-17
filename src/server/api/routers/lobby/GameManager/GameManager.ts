@@ -17,10 +17,12 @@ export class GameLoop {
 
   initEmitter(emitter: EventEmitter) {
     this.emitter = emitter;
+    this.startLoop()
   }
 
   setGameOnOff(flag: boolean) {
     this.gameIsTurnOff = !flag;
+    if(flag) this.startLoop()
   }
 
   private runNextRound() {
