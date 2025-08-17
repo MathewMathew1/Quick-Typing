@@ -113,7 +113,7 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
       setIsError(true)
     },
     onSettled: () =>{
-      console.log("loaded")
+
       setLoadedData(true)
     }
   });

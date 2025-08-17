@@ -13,7 +13,7 @@ export const LobbyGame: React.FC = () => {
 
   api.lobby.onPreGame.useSubscription(undefined, {
     onData: (payload) => {
-        console.log("log")
+
       setQuote(payload.quote);
       setTimer(Math.max(0, Math.floor((payload.endsAt - Date.now()) / 1000)));
       setGameState("preGame");

@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import { QuoteService } from "../Quote/QuoteService";
 import { LobbyEvents } from "../LobbyEvents";
+import type { Quote } from "../Quote/Quote";
 
 export class GameLoop {
   private quoteService: QuoteService;
@@ -8,6 +9,7 @@ export class GameLoop {
   private preGameDurationMs: number;
   private loopTimeout?: NodeJS.Timeout;
   private gameIsTurnOff: boolean;
+  public currentQuote: Quote | null = null;
 
   constructor(preGameDurationMs = 10000) {
     this.quoteService = new QuoteService();
@@ -17,34 +19,40 @@ export class GameLoop {
 
   initEmitter(emitter: EventEmitter) {
     this.emitter = emitter;
-    this.startLoop()
+    this.startLoop();
   }
 
   setGameOnOff(flag: boolean) {
     this.gameIsTurnOff = !flag;
-    if(flag) this.startLoop()
+    if (flag) this.startLoop();
   }
 
   private runNextRound() {
     if (!this.emitter || this.gameIsTurnOff) return;
 
-    const preQuote = this.quoteService.getQuote();
+    this.currentQuote = this.quoteService.getQuote();
+
+    const now = Date.now();
+
     this.emitter.emit(LobbyEvents.PRE_GAME, {
-      quote: preQuote.text,
-      endsAt: Date.now() + this.preGameDurationMs,
+      quote: this.currentQuote.text,
+      endsAt: now + this.preGameDurationMs,
     });
 
+
     this.loopTimeout = setTimeout(() => {
-      const gameQuote = this.quoteService.getQuote();
       this.emitter?.emit(LobbyEvents.START_GAME, {
-        quote: gameQuote.text,
-        durationMs: gameQuote.time,
+        quote: this.currentQuote!.text,
+        durationMs: this.currentQuote!.time * 1000,
       });
 
-      this.loopTimeout = setTimeout(() => {
-        this.runNextRound();
-      }, gameQuote.time);
+
+     
     }, this.preGameDurationMs);
+    this.loopTimeout = setTimeout(() => {
+      this.runNextRound();
+    }, this.currentQuote.time * 1000)
+     
   }
 
   startLoop() {

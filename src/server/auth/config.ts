@@ -18,7 +18,7 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   callbacks: {
     session: ({ session, user }) => {
-      console.log(session);
+
       if (user) {
         return {
           ...session,
