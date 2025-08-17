@@ -4,14 +4,18 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { LobbyEvents } from "./LobbyEvents";
+import type { LobbyUser } from "~/types/lobby";
+import { LobbyManager } from "./LobbyManager";
 
 export const lobbyEmitter = new EventEmitter();
+const lobbyManager = new LobbyManager();
+
 
 export const lobbyRouter = createTRPCRouter({
-  onJoin: publicProcedure.subscription(({ ctx }) => {
-    return observable<{ joinData: any }>((emit) => {
-      const listener = (joinData: any) => {
-        emit.next(joinData);
+  onJoin: publicProcedure.subscription(() => {
+    return observable<LobbyUser>((emit) => {
+      const listener = (user: LobbyUser) => {
+        emit.next(user);
       };
 
       lobbyEmitter.on(LobbyEvents.JOIN, listener);
@@ -23,7 +27,27 @@ export const lobbyRouter = createTRPCRouter({
   }),
 
   join: publicProcedure.input(z.object({})).mutation(async ({ ctx }) => {
-    lobbyEmitter.emit("new-post", {});
-    return {};
+    if (!ctx.session?.user) return null;
+
+    const user: LobbyUser = {
+      id: ctx.session.user.id,
+      name: ctx.session.user.name ?? "Guest",
+      isGuest: ctx.session.user.isGuest ?? false,
+      wordsWritten: 0,
+      timeWritten: 0,
+      wordsAccurate: 0, // empty data fix for later
+    };
+
+    const joined = lobbyManager.join(user);
+    if (!joined) return { success: false };
+
+    return { success: true, users: lobbyManager.getUsers() };
   }),
+
+  leave: publicProcedure.input(z.object({ userId: z.string() })).mutation(({ input }) => {
+    lobbyManager.leave(input.userId);
+    return { success: true };
+  }),
+
+
 });
