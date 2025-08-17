@@ -1,6 +1,7 @@
 "use client";
 
 import { useLobby } from "../context/LobbyContext";
+import { LobbyGame } from "./LobbyGame";
 import LobbyTable from "./LobbyTable";
 
 const Lobby = () => {
@@ -15,6 +16,7 @@ const Lobby = () => {
   }
   return (
     <div className="flex w-full justify-center">
+      <LobbyGame/>
       <LobbyTable />
     </div>
   );

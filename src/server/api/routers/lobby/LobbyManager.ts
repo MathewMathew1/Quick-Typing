@@ -1,5 +1,6 @@
 import type { LobbyUser } from "~/types/lobby";
 import { GameLoop } from "./GameManager/GameManager";
+import { EventEmitter } from "events";
 
 export class LobbyManager {
   private users: Map<string, LobbyUser>;
@@ -29,6 +30,10 @@ export class LobbyManager {
 
   getUsers(): LobbyUser[] {
     return Array.from(this.users.values());
+  }
+
+  initEmitter(emitter: EventEmitter) {
+    this.gameManager.initEmitter(emitter)
   }
 }
 

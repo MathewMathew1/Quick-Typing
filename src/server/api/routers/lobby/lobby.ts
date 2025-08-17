@@ -8,6 +8,7 @@ import type { LobbyUser } from "~/types/lobby";
 import { lobbyManager } from "./LobbyManager"; 
 
 export const lobbyEmitter = new EventEmitter();
+lobbyManager.initEmitter(lobbyEmitter)
 
 export const lobbyRouter = createTRPCRouter({
   onJoin: publicProcedure.subscription(() => {
@@ -24,6 +25,36 @@ export const lobbyRouter = createTRPCRouter({
     });
   }),
 
+   onPreGame: publicProcedure.subscription(() => {
+    return observable<{ quote: string; endsAt: number }>((emit) => {
+      const listener = (payload: { quote: string; endsAt: number }) => {
+        emit.next(payload);
+      };
+
+      lobbyManager.initEmitter(lobbyEmitter); 
+      lobbyEmitter.on(LobbyEvents.PRE_GAME, listener);
+
+      return () => {
+        lobbyEmitter.off(LobbyEvents.PRE_GAME, listener);
+      };
+    });
+  }),
+
+  onStartGame: publicProcedure.subscription(() => {
+    return observable<{ quote: string; durationMs: number }>((emit) => {
+      const listener = (payload: { quote: string; durationMs: number }) => {
+        emit.next(payload);
+      };
+
+      lobbyManager.initEmitter(lobbyEmitter);
+      lobbyEmitter.on(LobbyEvents.START_GAME, listener);
+
+      return () => {
+        lobbyEmitter.off(LobbyEvents.START_GAME, listener);
+      };
+    });
+  }),
+
   join: publicProcedure.input(z.object({})).mutation(async ({ ctx }) => {
     if (!ctx.session?.user) return null;
 
@@ -33,7 +64,7 @@ export const lobbyRouter = createTRPCRouter({
       isGuest: ctx.session.user.isGuest ?? false,
       wordsWritten: 0,
       timeWritten: 0,
-      wordsAccurate: 0, // empty data fix for later
+      wordsAccurate: 0, 
     };
 
     const joined = lobbyManager.join(user);
