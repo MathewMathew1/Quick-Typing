@@ -7,7 +7,7 @@ export class QuoteService {
   private lastUsed: Quote[] = [];
   private static readonly HISTORY_LIMIT = 10 as const;
 
-  constructor(datasetPath: string = path.join(__dirname, "dataset.json")) {
+  constructor(datasetPath: string = path.join(process.cwd(), "src/data/dataset.json")) {
     const raw = readFileSync(datasetPath, "utf-8");
     this.quotes = JSON.parse(raw) as Quote[];
     if (this.quotes.length === 0) {
