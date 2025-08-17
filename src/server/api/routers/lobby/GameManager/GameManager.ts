@@ -55,7 +55,7 @@ export class GameLoop {
     this.loopTimeout = setTimeout(() => {
       this.runNextRound();
 
-    }, this.currentQuote.time * 1000)
+    }, this.currentQuote.time * 1000 + this.preGameDurationMs)
      
   }
 
