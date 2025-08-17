@@ -67,6 +67,30 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
     updateObjectByKey("id", userId, updates);
   };
 
+  api.lobby.onUpdateStats.useSubscription(undefined, {
+    onData: (user: LobbyUser) => {
+      const accuracy =
+        user.wordsWritten > 0
+          ? (user.wordsAccurate / user.wordsWritten) * 100
+          : 0;
+
+      const minutes = user.timeWritten / 1000 / 60;
+      const wordsPerMinute = minutes > 0 ? user.wordsWritten / minutes : 0;
+
+      const updatedStats: Partial<LobbyUserStats> = {
+        ...user,
+        accuracy,
+        wordsPerMinute,
+      };
+
+      updateUser(user.id, updatedStats);
+
+      if (currentUser?.id === user.id) {
+        setCurrentUser((prev) => (prev ? { ...prev, ...updatedStats } : prev));
+      }
+    },
+  });
+
   api.lobby.onJoin.useSubscription(undefined, {
     onData: (user: LobbyUser) => {
       if (!users.find((u) => u.id === user.id)) {

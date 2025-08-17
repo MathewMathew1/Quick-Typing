@@ -2,10 +2,12 @@ import type { LobbyUser, LobbyUserWithRound } from "~/types/lobby";
 import { GameLoop } from "./GameManager/GameManager";
 import { EventEmitter } from "events";
 import { db } from "~/server/db";
+import { LobbyEvents } from "./LobbyEvents";
 
 export class LobbyManager {
   private users: Map<string, LobbyUserWithRound>;
   private gameManager: GameLoop = new GameLoop();
+  private emitter?: EventEmitter;
 
   constructor() {
     this.users = new Map();
@@ -51,6 +53,7 @@ export class LobbyManager {
 
   initEmitter(emitter: EventEmitter) {
     this.gameManager.initEmitter(emitter);
+    this.emitter = emitter;
   }
   checkWord(userId: string, word: string): boolean {
     const entry = this.users.get(userId);
@@ -108,6 +111,10 @@ export class LobbyManager {
     entry.user.timeWritten += entry.roundData.timeWritten;
     entry.user.wordsAccurate += entry.roundData.wordsAccurate;
     entry.user.wordsWritten += entry.roundData.wordsWritten;
+
+    if (this.emitter) {
+      this.emitter.emit(LobbyEvents.UPDATE_STATS, entry.user);
+    }
 
     if (!entry.user.isGuest) {
       await db.user.update({

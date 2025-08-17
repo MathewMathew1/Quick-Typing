@@ -55,6 +55,20 @@ export const lobbyRouter = createTRPCRouter({
     });
   }),
 
+  onUpdateStats: publicProcedure.subscription(() => {
+    return observable<LobbyUser>((emit) => {
+      const listener = (user: LobbyUser) => {
+        emit.next(user);
+      };
+
+      lobbyEmitter.on(LobbyEvents.UPDATE_STATS, listener);
+
+      return () => {
+        lobbyEmitter.off(LobbyEvents.UPDATE_STATS, listener);
+      };
+    });
+  }),
+
   join: publicProcedure.input(z.object({})).mutation(async ({ ctx }) => {
     if (!ctx.session?.user) return null;
 
@@ -72,7 +86,6 @@ export const lobbyRouter = createTRPCRouter({
           name: true,
         },
       });
-
 
       if (dbUser) {
         wordsWritten = dbUser.wordsWritten;
