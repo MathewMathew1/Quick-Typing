@@ -103,6 +103,8 @@ export const lobbyRouter = createTRPCRouter({
       timeWritten,
     };
 
+    lobbyEmitter.emit(LobbyEvents.JOIN, user);
+
     const joined = lobbyManager.join(user);
     if (!joined) return { success: false };
 
