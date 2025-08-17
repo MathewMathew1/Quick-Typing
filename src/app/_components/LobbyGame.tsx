@@ -77,6 +77,7 @@ export const LobbyGame: React.FC = () => {
           type="text"
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}
+          onPaste={(e) => e.preventDefault()}
           disabled={gameState !== "game"}
           className={`w-full rounded-lg border p-3 text-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
             isCurrentWordCorrect
