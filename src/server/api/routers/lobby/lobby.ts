@@ -58,13 +58,35 @@ export const lobbyRouter = createTRPCRouter({
   join: publicProcedure.input(z.object({})).mutation(async ({ ctx }) => {
     if (!ctx.session?.user) return null;
 
+    let wordsWritten = 0;
+    let wordsAccurate = 0;
+    let timeWritten = 0;
+
+    if (!ctx.session.user.isGuest) {
+      const dbUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          wordsWritten: true,
+          accurateWords: true,
+          secondsWritten: true,
+          name: true,
+        },
+      });
+
+      if (dbUser) {
+        wordsWritten = dbUser.wordsWritten;
+        wordsAccurate = dbUser.accurateWords;
+        timeWritten = dbUser.secondsWritten;
+      }
+    }
+
     const user: LobbyUser = {
       id: ctx.session.user.id,
       name: ctx.session.user.name ?? "Guest",
       isGuest: ctx.session.user.isGuest ?? false,
-      wordsWritten: 0,
-      timeWritten: 0,
-      wordsAccurate: 0,
+      wordsWritten,
+      wordsAccurate,
+      timeWritten,
     };
 
     const joined = lobbyManager.join(user);
@@ -81,12 +103,7 @@ export const lobbyRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) => {
       const user = ctx.session?.user!;
-      const isCorrect = lobbyManager.checkWord(
-        user?.id,
-        input.word
-      );
-
-      
+      const isCorrect = lobbyManager.checkWord(user?.id, input.word);
 
       return {
         success: true,
