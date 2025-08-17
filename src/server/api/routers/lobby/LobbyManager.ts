@@ -32,9 +32,9 @@ export class LobbyManager {
   }
 
   leave(userId: string): void {
-    console.log(userId)
+    console.log(userId);
     const entry = this.users.get(userId);
-  
+
     if (entry) {
       this.updateUserData(entry);
     }
@@ -52,13 +52,13 @@ export class LobbyManager {
   initEmitter(emitter: EventEmitter) {
     this.gameManager.initEmitter(emitter);
   }
-
   checkWord(userId: string, word: string): boolean {
     const entry = this.users.get(userId);
     if (!entry || !this.gameManager.currentQuote) return false;
 
     const currentWords = this.gameManager.currentQuote.text.split(" ");
-    const correctWord = currentWords[entry.roundData.wordsWritten] || "";
+    const currentIndex = entry.roundData.wordsWritten;
+    const correctWord = currentWords[currentIndex] || "";
 
     const isCorrect = word === correctWord;
 
@@ -70,9 +70,14 @@ export class LobbyManager {
 
     entry.roundData.roundStart = now;
 
-    entry.roundData.wordsWritten += 1;
-    if (isCorrect) entry.roundData.wordsAccurate += 1;
-    entry.roundData.currentWord = "";
+    if (isCorrect) {
+      entry.roundData.wordsWritten += 1;
+      entry.roundData.wordsAccurate += 1;
+      entry.roundData.currentWord =
+        currentWords[entry.roundData.wordsWritten] || "";
+    } else {
+      entry.roundData.currentWord = correctWord;
+    }
 
     if (entry.roundData.wordsWritten >= currentWords.length) {
       this.updateUserData(entry);
@@ -104,18 +109,16 @@ export class LobbyManager {
     entry.user.wordsAccurate += entry.roundData.wordsAccurate;
     entry.user.wordsWritten += entry.roundData.wordsWritten;
 
-
-    if(!entry.user.isGuest){
-       await db.user.update({
-      where: { id: entry.user.id },
-      data: {
-        secondsWritten: entry.user.timeWritten,
-        accurateWords: entry.user.wordsAccurate,
-        wordsWritten: entry.user.wordsWritten,
-      },
-    });
+    if (!entry.user.isGuest) {
+      await db.user.update({
+        where: { id: entry.user.id },
+        data: {
+          secondsWritten: entry.user.timeWritten,
+          accurateWords: entry.user.wordsAccurate,
+          wordsWritten: entry.user.wordsWritten,
+        },
+      });
     }
-   
   }
 }
 

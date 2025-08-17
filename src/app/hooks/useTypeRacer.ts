@@ -22,7 +22,7 @@ export function useTypingRace(quote: string) {
     if (currentWord.startsWith(value)) {
       setIsCurrentWordCorrect(true);
     } else {
-      if(!isCurrentWordCorrect){ 
+      if(isCurrentWordCorrect){ 
         submitWordMutation.mutate({ word: value });
       }
       setIsCurrentWordCorrect(false);
