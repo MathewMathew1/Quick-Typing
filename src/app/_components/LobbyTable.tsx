@@ -2,11 +2,13 @@
 
 import { useLobby } from "../context/LobbyContext";
 import { SortCategory, useLobbySort } from "../hooks/useSortCategory";
+import { useSortedLobbyUsers } from "../hooks/useSortedLobbyUsers";
 
 export default function LobbyTable() {
   const { users, loadedData } = useLobby();
 
   const { sortCategory, sortOrder, changeSortCategory } = useLobbySort();
+  const sortedUsers = useSortedLobbyUsers(users, sortCategory, sortOrder);
 
   if (!loadedData) {
     return <div className="p-4 text-white">Loading lobby data...</div>;
@@ -16,7 +18,6 @@ export default function LobbyTable() {
     return <div className="p-4 text-white">No users in lobby.</div>;
   }
 
-   const displayedUsers = [...users];
 
   return (
     <div className="w-full overflow-x-auto p-4 sm:w-[80%]">
@@ -59,7 +60,7 @@ export default function LobbyTable() {
           </tr>
         </thead>
         <tbody className="bg-gray-800 text-white">
-          {displayedUsers.map((user) => (
+          {sortedUsers.map((user) => (
             <tr key={user.id} className="hover:bg-gray-700">
               <td className="border-b border-gray-700 px-4 py-2">
                 {user.name}
