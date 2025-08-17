@@ -1,9 +1,10 @@
-import type { LobbyUser } from "~/types/lobby";
+import type { LobbyUser, LobbyUserWithRound } from "~/types/lobby";
 import { GameLoop } from "./GameManager/GameManager";
 import { EventEmitter } from "events";
+import { db } from "~/server/db";
 
 export class LobbyManager {
-  private users: Map<string, LobbyUser>;
+  private users: Map<string, LobbyUserWithRound>;
   private gameManager: GameLoop = new GameLoop();
 
   constructor() {
@@ -11,29 +12,104 @@ export class LobbyManager {
   }
 
   join(user: LobbyUser): boolean {
-    if (this.users.has(user.id)) {
-      return false;
-    }
-    if (this.users.size == 0) {
+    if (this.users.has(user.id)) return false;
+
+    if (this.users.size === 0) {
       this.gameManager.setGameOnOff(true);
     }
-    this.users.set(user.id, user);
+
+    this.users.set(user.id, {
+      user,
+      roundData: {
+        wordsWritten: 0,
+        wordsAccurate: 0,
+        timeWritten: 0,
+        currentWord: "",
+      },
+    });
+
     return true;
   }
 
   leave(userId: string): void {
+    const entry = this.users.get(userId);
+    if (entry) {
+      this.updateUserData(entry);
+    }
+
     this.users.delete(userId);
-    if (this.users.size == 0) {
+    if (this.users.size === 0) {
       this.gameManager.setGameOnOff(false);
     }
   }
 
   getUsers(): LobbyUser[] {
-    return Array.from(this.users.values());
+    return Array.from(this.users.values()).map((entry) => entry.user);
   }
 
   initEmitter(emitter: EventEmitter) {
-    this.gameManager.initEmitter(emitter)
+    this.gameManager.initEmitter(emitter);
+  }
+
+  checkWord(userId: string, word: string): boolean {
+    const entry = this.users.get(userId);
+    if (!entry || !this.gameManager.currentQuote) return false;
+
+    const currentWords = this.gameManager.currentQuote.text.split(" ");
+    const correctWord = currentWords[entry.roundData.wordsWritten] || "";
+
+    const isCorrect = word === correctWord;
+
+    const now = Date.now();
+    if (entry.roundData.roundStart) {
+      const timeSpent = now - entry.roundData.roundStart;
+      entry.roundData.timeWritten += timeSpent;
+    }
+
+    entry.roundData.roundStart = now;
+
+    entry.roundData.wordsWritten += 1;
+    if (isCorrect) entry.roundData.wordsAccurate += 1;
+    entry.roundData.currentWord = "";
+
+    if (entry.roundData.wordsWritten >= currentWords.length) {
+      this.updateUserData(entry);
+    }
+
+    return isCorrect;
+  }
+
+  updateCurrentWord(userId: string, word: string) {
+    const entry = this.users.get(userId);
+    if (!entry) return;
+    entry.roundData.currentWord = word;
+  }
+
+  resetRoundData() {
+    for (const entry of this.users.values()) {
+      this.updateUserData(entry);
+      entry.roundData = {
+        wordsWritten: 0,
+        wordsAccurate: 0,
+        timeWritten: 0,
+        currentWord: "",
+      };
+    }
+  }
+
+  async updateUserData(entry: LobbyUserWithRound) {
+    entry.user.timeWritten += entry.roundData.timeWritten;
+    entry.user.wordsAccurate += entry.roundData.wordsAccurate;
+    entry.user.wordsWritten += entry.roundData.wordsWritten;
+
+    await db.user.update({
+      where: { id: entry.user.id },
+      data: {
+        secondsWritten: entry.user.timeWritten,
+        accurateWords: entry.user.wordsAccurate,
+        wordsWritten: entry.user.wordsWritten,
+      },
+    });
   }
 }
 

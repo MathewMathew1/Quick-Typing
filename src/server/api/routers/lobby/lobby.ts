@@ -5,10 +5,10 @@ import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { LobbyEvents } from "./LobbyEvents";
 import type { LobbyUser } from "~/types/lobby";
-import { lobbyManager } from "./LobbyManager"; 
+import { lobbyManager } from "./LobbyManager";
 
 export const lobbyEmitter = new EventEmitter();
-lobbyManager.initEmitter(lobbyEmitter)
+lobbyManager.initEmitter(lobbyEmitter);
 
 export const lobbyRouter = createTRPCRouter({
   onJoin: publicProcedure.subscription(() => {
@@ -25,13 +25,13 @@ export const lobbyRouter = createTRPCRouter({
     });
   }),
 
-   onPreGame: publicProcedure.subscription(() => {
+  onPreGame: publicProcedure.subscription(() => {
     return observable<{ quote: string; endsAt: number }>((emit) => {
       const listener = (payload: { quote: string; endsAt: number }) => {
         emit.next(payload);
       };
 
-      lobbyManager.initEmitter(lobbyEmitter); 
+      lobbyManager.initEmitter(lobbyEmitter);
       lobbyEmitter.on(LobbyEvents.PRE_GAME, listener);
 
       return () => {
@@ -64,7 +64,7 @@ export const lobbyRouter = createTRPCRouter({
       isGuest: ctx.session.user.isGuest ?? false,
       wordsWritten: 0,
       timeWritten: 0,
-      wordsAccurate: 0, 
+      wordsAccurate: 0,
     };
 
     const joined = lobbyManager.join(user);
@@ -73,10 +73,32 @@ export const lobbyRouter = createTRPCRouter({
     return { success: true, users: lobbyManager.getUsers() };
   }),
 
-  leave: publicProcedure.input(z.object({ userId: z.string() })).mutation(({ input }) => {
-    lobbyManager.leave(input.userId);
-    return { success: true };
-  }),
+  leave: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(({ input }) => {
+      lobbyManager.leave(input.userId);
+      return { success: true };
+    }),
 
+  submitWord: publicProcedure
+    .input(
+      z.object({
+        word: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      const user = ctx.session?.user!;
+      const isCorrect = lobbyManager.checkWord(
+        user?.id,
+        input.word
+      );
 
+      
+
+      return {
+        success: true,
+        isCorrect,
+        user,
+      };
+    }),
 });

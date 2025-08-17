@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 import { QuoteService } from "../Quote/QuoteService";
 import { LobbyEvents } from "../LobbyEvents";
 import type { Quote } from "../Quote/Quote";
+import { lobbyManager } from "../LobbyManager";
 
 export class GameLoop {
   private quoteService: QuoteService;
@@ -39,6 +40,8 @@ export class GameLoop {
       endsAt: now + this.preGameDurationMs,
     });
 
+    lobbyManager.resetRoundData(); // dirty
+
 
     this.loopTimeout = setTimeout(() => {
       this.emitter?.emit(LobbyEvents.START_GAME, {
@@ -51,6 +54,7 @@ export class GameLoop {
     }, this.preGameDurationMs);
     this.loopTimeout = setTimeout(() => {
       this.runNextRound();
+
     }, this.currentQuote.time * 1000)
      
   }

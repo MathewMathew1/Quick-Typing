@@ -11,3 +11,16 @@ export type LobbyUserStats = LobbyUser & {
   accuracy: number;
   wordsPerMinute: number;
 };
+
+export type UserRoundData = {
+  wordsWritten: number;
+  wordsAccurate: number;
+  timeWritten: number;
+  currentWord: string;
+  roundStart?: number;
+};
+
+export type LobbyUserWithRound = {
+  user: LobbyUser;
+  roundData: UserRoundData;
+};

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { api } from "~/trpc/react";
 
 export function useTypingRace(quote: string) {
   const [inputValue, setInputValue] = useState("");
@@ -13,18 +14,24 @@ export function useTypingRace(quote: string) {
     setIsCurrentWordCorrect(true);
   }, [quote]);
 
+  const submitWordMutation = api.lobby.submitWord.useMutation();
+
   const handleInputChange = (value: string) => {
     const currentWord = words[currentWordIndex] || "";
 
     if (currentWord.startsWith(value)) {
       setIsCurrentWordCorrect(true);
     } else {
+      if(!isCurrentWordCorrect){ // not the best to fix 
+        submitWordMutation.mutate({ word: value });
+      }
       setIsCurrentWordCorrect(false);
     }
 
     if (value.endsWith(" ") && value.trim() === currentWord) {
+      submitWordMutation.mutate({ word: currentWord });
       setCurrentWordIndex((idx) => idx + 1);
-      setInputValue(""); 
+      setInputValue("");
       setIsCurrentWordCorrect(true);
     } else {
       setInputValue(value);
