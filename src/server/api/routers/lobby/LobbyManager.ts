@@ -4,6 +4,12 @@ import { EventEmitter } from "events";
 import { db } from "~/server/db";
 import { LobbyEvents } from "./LobbyEvents";
 
+const fakeUsers: LobbyUser[] = [
+  { id: "bot1", name: "Botcian 1", isGuest: true, wordsWritten: 100, wordsAccurate: 99, timeWritten: 550000 },
+  { id: "bot2", name: "Botcian 2", isGuest: true, wordsWritten: 80, wordsAccurate: 55, timeWritten: 130000 },
+  { id: "bot3", name: "Botcian 3", isGuest: true, wordsWritten: 60, wordsAccurate: 33, timeWritten: 1220000 },
+];
+
 export class LobbyManager {
   private users: Map<string, LobbyUserWithRound>;
   private gameManager: GameLoop = new GameLoop();
@@ -47,9 +53,11 @@ export class LobbyManager {
     }
   }
 
-  getUsers(): LobbyUser[] {
-    return Array.from(this.users.values()).map((entry) => entry.user);
-  }
+getUsers(): LobbyUser[] {
+  const realUsers = Array.from(this.users.values()).map((entry) => entry.user);
+
+  return [...realUsers, ...fakeUsers];
+}
 
   initEmitter(emitter: EventEmitter) {
     this.gameManager.initEmitter(emitter);
