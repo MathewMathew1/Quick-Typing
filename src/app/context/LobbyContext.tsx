@@ -100,7 +100,7 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
             : 0;
 
         const minutes = user.timeWritten / 1000 / 60;
-        const wordsPerMinute = minutes > 0 ? user.wordsWritten / minutes : 0;
+        const wordsPerMinute = minutes > 0 ? user.wordsAccurate / minutes : 0;
 
         push({ ...user, accuracy, wordsPerMinute });
       }
@@ -113,15 +113,17 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
         setIsError(true);
         return;
       }
-
+     
       result.users.forEach((user: LobbyUser) => {
+ 
+         if (users.find((u) => u.id === user.id)) return; 
         const accuracy =
           user.wordsWritten > 0
             ? (user.wordsAccurate / user.wordsWritten) * 100
             : 0;
 
         const minutes = user.timeWritten / 1000 / 60;
-        const wordsPerMinute = minutes > 0 ? user.wordsWritten / minutes : 0;
+        const wordsPerMinute = minutes > 0 ? user.wordsAccurate / minutes : 0;
 
         const userStats: LobbyUserStats = { ...user, accuracy, wordsPerMinute };
         push(userStats);
