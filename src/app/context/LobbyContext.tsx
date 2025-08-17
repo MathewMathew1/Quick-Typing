@@ -12,7 +12,7 @@ type LobbyContextProps = {
   users: LobbyUserStats[];
   currentUser: LobbyUserStats | null;
   loadedData: boolean;
-  isError: boolean // can later add more info
+  isError: boolean; // can later add more info
 };
 
 type LobbyUpdateProps = {
@@ -41,8 +41,8 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
   } = useArray<LobbyUserStats>([]);
 
   const [currentUser, setCurrentUser] = useState<LobbyUserStats | null>(null);
-  const [loadedData, setLoadedData] = useState(false)
-  const [isError, setIsError] = useState(false)
+  const [loadedData, setLoadedData] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const addUser = (user: LobbyUserStats) => {
     if (!users.find((u) => u.id === user.id)) {
@@ -75,22 +75,20 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
             ? (user.wordsAccurate / user.wordsWritten) * 100
             : 0;
 
-        const wordsPerMinute =
-          user.timeWritten > 0
-            ? user.wordsWritten / (user.timeWritten / 60)
-            : 0;
+        const minutes = user.timeWritten / 1000 / 60;
+        const wordsPerMinute = minutes > 0 ? user.wordsWritten / minutes : 0;
 
         push({ ...user, accuracy, wordsPerMinute });
       }
     },
   });
 
-   const joinMutation = api.lobby.join.useMutation({
+  const joinMutation = api.lobby.join.useMutation({
     onSuccess: (result) => {
-      if (!result?.success || !result.users){
-        setIsError(true)
-        return
-      } 
+      if (!result?.success || !result.users) {
+        setIsError(true);
+        return;
+      }
 
       result.users.forEach((user: LobbyUser) => {
         const accuracy =
@@ -98,24 +96,22 @@ export function LobbyProvider({ children }: { children: ReactNode }) {
             ? (user.wordsAccurate / user.wordsWritten) * 100
             : 0;
 
-        const wordsPerMinute =
-          user.timeWritten > 0
-            ? user.wordsWritten / (user.timeWritten / 60)
-            : 0;
+        const minutes = user.timeWritten / 1000 / 60;
+        const wordsPerMinute = minutes > 0 ? user.wordsWritten / minutes : 0;
 
         const userStats: LobbyUserStats = { ...user, accuracy, wordsPerMinute };
         push(userStats);
 
-        if (user.id === result.users.find((u) => u.id)?.id) setCurrentUser(userStats);
+        if (user.id === result.users.find((u) => u.id)?.id)
+          setCurrentUser(userStats);
       });
     },
     onError: () => {
-      setIsError(true)
+      setIsError(true);
     },
-    onSettled: () =>{
-
-      setLoadedData(true)
-    }
+    onSettled: () => {
+      setLoadedData(true);
+    },
   });
 
   useEffect(() => {

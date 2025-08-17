@@ -32,7 +32,7 @@ export class LobbyManager {
   }
 
   leave(userId: string): void {
-    
+    console.log(userId)
     const entry = this.users.get(userId);
   
     if (entry) {
