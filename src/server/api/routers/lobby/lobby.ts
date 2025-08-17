@@ -73,13 +73,6 @@ export const lobbyRouter = createTRPCRouter({
     return { success: true, users: lobbyManager.getUsers() };
   }),
 
-  leave: publicProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(({ input }) => {
-      lobbyManager.leave(input.userId);
-      return { success: true };
-    }),
-
   submitWord: publicProcedure
     .input(
       z.object({
