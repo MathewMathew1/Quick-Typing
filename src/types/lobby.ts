@@ -6,3 +6,8 @@ export type LobbyUser = {
   timeWritten: number;
   wordsAccurate: number;
 };
+
+export type LobbyUserStats = LobbyUser & {
+  accuracy: number;
+  wordsPerMinute: number;
+};
